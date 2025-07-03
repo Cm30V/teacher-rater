@@ -1,13 +1,18 @@
 import java.util.*;
+import java.io.*;
 
 
 public class Main {
-    public static boolean use = true;
+
+    public static boolean inUse = true;
     public static ArrayList<Teacher> listedNames = new ArrayList<>();
     static Scanner scanner = new Scanner(System.in);
-    public static void main(String[] args) {
 
-        while(use) {
+
+    public static void main(String[] args) {
+        loadRatingsFromFile();
+
+        while(inUse) {
             System.out.println("Welcome to Teacher Ratings");
             System.out.println("Would you like to check ratings or provide a rating? (c/p): ");
             String input = scanner.nextLine();
@@ -35,10 +40,11 @@ public class Main {
         }
         Teacher name_rating = new Teacher(name, rating);
         listedNames.add(name_rating);
+        saveRatingToFile(name_rating);
         System.out.println("Rating successfully added thank you!");
         System.out.print("Would you like to continue using Teacher rater? (y/n): ");
         if(scanner.nextLine().equalsIgnoreCase("n")){
-            use = false;
+            inUse = false;
         }
 
     }
@@ -54,9 +60,6 @@ public class Main {
                 counter++;
             }
         }
-
-
-
         if(counter==0) {
             System.out.println("No ratings found for " + name);
         }
@@ -66,18 +69,34 @@ public class Main {
         }
         System.out.print("Would you like to continue using Teacher rater? (y/n): ");
         if(scanner.nextLine().equalsIgnoreCase("n")){
-            use = false;
+            inUse = false;
+        }
+    }
+
+    public static void saveRatingToFile(Teacher teacher) {
+        try (FileWriter fw = new FileWriter("ratings.csv", true)) {
+            fw.write(teacher.name + "," + teacher.rating + "\n");
+        } catch (IOException e) {
+            System.out.println("Error saving rating: " + e.getMessage());
+        }
+    }
+
+    public static void loadRatingsFromFile() {
+        try (BufferedReader br = new BufferedReader(new FileReader("ratings.csv"))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] parts = line.split(",");
+                if(parts.length == 2) {
+                    String name = parts[0];
+                    double rating = Double.parseDouble(parts[1]);
+                    listedNames.add(new Teacher(name, rating));
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("No existing ratings found, starting fresh.");
         }
     }
 }
 
 
-class Teacher{
-    String name;
-    double rating;
 
-    public Teacher(String name, double rating){
-        this.name = name;
-        this.rating = rating;
-    }
-}
